@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Web App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid border bg-light text-bg-light mt-5 p-5 rounded">
+        <h2 class="display-2 text-center">Simple Task Application</h2>
+        <div style="max-height:400px;min-height: 400px;" class="container p-5 d-flex flex-column gap-4 overflow-auto" id="taskList">
+
+        </div>
+
+        <div class="container mt-5">
+            <form id="taskForm">
+
+                <label for="taskInput" class="h3">To-Do:</label>
+                <textarea class="form-control" rows="5" id="taskInput" name="taskInput" required></textarea>
+                <div class="group mt-2">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                    <button type="reset" class="btn btn-outline-primary">Reset</button>
+                </div>
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+<script>
+    const taskList = document.getElementById("taskList");
+    const taskForm = document.getElementById("taskForm");
+    const taskInput = document.getElementById("taskInput");
+
+
+    function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        taskList.innerHTML = "";
+        tasks.forEach((task,index)=> {
+            createTaskElement(task.text, task.done, index);
+        });
+    }
+
+    function createTaskElement(text, done, index) {
+        const taskDiv = document.createElement("div");
+        taskDiv.classList.add("container", "border", "rounded", "p-4", "task-item");
+        if(done) taskDiv.classList.add("done");
+        taskDiv.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <h3>Task</h3> 
+                    <span class="badge ${done ? 'bg-success' : 'bg-warning'} rounded-pill">${done ? 'Done' : 'Waiting'}</span>
+                </div>
+                <p>${text}</p>
+                <button class="btn btn-primary ${done ? 'disabled' : ''}" ${done ? 'disabled' : ''} onclick="markDone(${index})">Done</button>
+                <button class="btn btn-danger" onclick="deleteTask(${index})">Delete</button>
+            `;
+            taskList.appendChild(taskDiv);
+    }
+
+    taskForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const text = taskInput.value.trim();
+            if (text) {
+                createTaskElement(text, false);
+                saveTasks();
+                taskInput.value = "";
+            }
+        });
+
+        function markDone(index) {
+            const tasks = JSON.parse(localStorage.getItem("tasks"));
+            tasks[index].done = true;
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+            loadTasks();
+        }
+
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem("tasks"));
+            tasks.splice(index, 1);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+            loadTasks();
+        }
+
+        function saveTasks() {
+            const tasks = [];
+            document.querySelectorAll(".task-item").forEach(task => {
+                tasks.push({
+                    text: task.querySelector("p").textContent,
+                    done: task.classList.contains("done")
+                });
+            });
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+    loadTasks();
+</script>
+
+</body>
+</html>
